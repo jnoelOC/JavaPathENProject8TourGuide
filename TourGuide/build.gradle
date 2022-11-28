@@ -40,7 +40,7 @@ dependencies {
     implementation(name:'RewardCentral', ext:'jar')
     implementation(name:'TripPricer', ext:'jar')
     
-    testImplementation("junit:junit")
+    testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '2.6.2'
 }
 
