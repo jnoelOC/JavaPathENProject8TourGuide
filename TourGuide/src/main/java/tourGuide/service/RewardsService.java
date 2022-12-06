@@ -42,8 +42,8 @@ public class RewardsService {
 	public void calculateRewards(User user) {
 		List<VisitedLocation> userLocations = user.getVisitedLocations();
 		List<Attraction> attractions = gpsUtil.getAttractions();
-		// gpsutil inutile de le rappeler pour chaque user
-		// tenter d'optimiser ces 2 for et 2 if
+		// gpsutil.getAttractions inutile de le rappeler pour chaque user
+		// optimiser ces 2 for et 2 if
 		for(VisitedLocation visitedLocation : userLocations) {
 			for(Attraction attraction : attractions) {
 				if(user.getUserRewards().stream().filter(r -> r.attraction.attractionName.equals(attraction.attractionName)).count() == 0) {

@@ -50,8 +50,8 @@ public class TestTourGuideService {
 		User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
 		User user2 = new User(UUID.randomUUID(), "jon2", "000", "jon2@tourGuide.com");
 
-		tourGuideService.addUser(user);
-		tourGuideService.addUser(user2);
+		userService.addUser(user);
+		userService.addUser(user2);
 		
 		User retrivedUser = userService.getUser(user.getUserName());
 		User retrivedUser2 = userService.getUser(user2.getUserName());
@@ -71,14 +71,15 @@ public class TestTourGuideService {
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
 		InternalTestHelper.setInternalUserNumber(0);
 		TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
-		
+		UserService userService = new UserService();
+
 		User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
 		User user2 = new User(UUID.randomUUID(), "jon2", "000", "jon2@tourGuide.com");
 
-		tourGuideService.addUser(user);
-		tourGuideService.addUser(user2);
+		userService.addUser(user);
+		userService.addUser(user2);
 		
-		List<User> allUsers = tourGuideService.getAllUsers();
+		List<User> allUsers = userService.getAllUsers();
 
 		tourGuideService.tracker.stopTracking();
 		

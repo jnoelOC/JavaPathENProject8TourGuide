@@ -3,6 +3,8 @@ package tourGuide.controller;
 import java.util.List;
 
 import gpsUtil.GpsUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,7 +22,7 @@ import tripPricer.Provider;
 
 @RestController
 public class TourGuideController {
-
+    private Logger logger = LoggerFactory.getLogger(TourGuideController.class);
 	@Autowired
 	TourGuideService tourGuideService;
 
@@ -50,7 +52,9 @@ public class TourGuideController {
     @RequestMapping("/getNearbyAttractions") 
     public String getNearbyAttractions(@RequestParam String userName) {
     	VisitedLocation visitedLocation = tourGuideService.getUserLocation(userService.getUser(userName));
-    	return JsonStream.serialize(tourGuideService.getNearByAttractions(visitedLocation));
+    	return JsonStream.serialize(tourGuideService.getClosest5Attractions(visitedLocation));
+        /*VisitedLocation visitedLocation = tourGuideService.getUserLocation(userService.getUser(userName));
+        return JsonStream.serialize(tourGuideService.getNearByAttractions(visitedLocation));*/
     }
     
     @RequestMapping("/getRewards") 
@@ -60,7 +64,8 @@ public class TourGuideController {
 
     @GetMapping("/toto")
     public List<User> getAllUsers() {
-        return tourGuideService.getAllUsers();
+        logger.info("start AllUsers");
+        return userService.getAllUsers();
     }
     
     @RequestMapping("/getAllCurrentLocations")

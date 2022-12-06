@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.jsoniter.output.JsonStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,9 +24,9 @@ import tripPricer.TripPricer;
 public class TourGuideService {
 	private Logger logger = LoggerFactory.getLogger(TourGuideService.class);
 
+
 	@Autowired
 	private UserRepository userRepository;
-
 	@Autowired
 	private UserService userService;
 
@@ -66,16 +67,18 @@ public class TourGuideService {
 
 
 
-
+/*
 	public void addUser(User user) {
-		if(!userRepository.internalUserMap.containsKey(user.getUserName())) {
+		userService.addUser(user);
+		/*if(!userRepository.internalUserMap.containsKey(user.getUserName())) {
 			userRepository.internalUserMap.put(user.getUserName(), user);
-		}
-	}
+		}*/
+/*	}
 	public List<User> getAllUsers() {
-		return userRepository.internalUserMap.values().stream().collect(Collectors.toList());
+		//return userRepository.internalUserMap.values().stream().collect(Collectors.toList());
+		return userService.getAllUsers();
 	}
-
+*/
 
 
 
@@ -91,9 +94,22 @@ public class TourGuideService {
 		VisitedLocation visitedLocation = gpsUtil.getUserLocation(user.getUserId());
 		// verifier les sleep et sleeplighter dans gpsutil et dans calculateRewards()
 		// paralleliser asynchrone le getuserloc et le calculateRewards
+		//
 		user.addToVisitedLocations(visitedLocation);
 		rewardsService.calculateRewards(user);
 		return visitedLocation;
+	}
+
+	//  Return a new JSON object that contains:
+	// Name of Tourist attraction,
+	// Tourist attractions lat/long,
+	// The user's location lat/long,
+	// The distance in miles between the user's location and each of the attractions.
+	// The reward points for visiting each Attraction.
+	//    Note: Attraction reward points can be gathered from RewardsCentral
+	public String getClosest5Attractions(VisitedLocation visitedLocation){
+		//
+		return JsonStream.serialize("");
 	}
 
 	public List<Attraction> getNearByAttractions(VisitedLocation visitedLocation) {

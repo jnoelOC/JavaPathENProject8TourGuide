@@ -21,6 +21,7 @@ import tourGuide.service.RewardsService;
 import tourGuide.service.TourGuideService;
 import tourGuide.model.User;
 import tourGuide.model.UserReward;
+import tourGuide.service.UserService;
 
 public class TestRewardsService {
 
@@ -59,9 +60,10 @@ public class TestRewardsService {
 
 		InternalTestHelper.setInternalUserNumber(1);
 		TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
-		
-		rewardsService.calculateRewards(tourGuideService.getAllUsers().get(0));
-		List<UserReward> userRewards = tourGuideService.getUserRewards(tourGuideService.getAllUsers().get(0));
+		UserService userService = new UserService();
+
+		rewardsService.calculateRewards(userService.getAllUsers().get(0));
+		List<UserReward> userRewards = tourGuideService.getUserRewards(userService.getAllUsers().get(0));
 		tourGuideService.tracker.stopTracking();
 
 		assertEquals(gpsUtil.getAttractions().size(), userRewards.size());
