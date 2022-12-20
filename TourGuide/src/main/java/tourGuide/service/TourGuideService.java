@@ -1,8 +1,10 @@
 package tourGuide.service;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 
+import gpsUtil.location.Location;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +31,7 @@ public class TourGuideService {
 	@Autowired
 	private UserService userService;
 
-	final Integer NbOfClosest = 5;
+	static final Integer NbOfClosest = 5;
 
 	private final GpsUtil gpsUtil;
 	private final RewardsService rewardsService;
@@ -59,6 +61,7 @@ public class TourGuideService {
 	}
 	
 	public VisitedLocation getUserLocation(User user) {
+		// ATTENTION : isEmpty fait en sorte que on perd la langue du pays c-a-d . ou , dans longitude de gpsUtil.jar
 		VisitedLocation visitedLocation = (user.getVisitedLocations().size() > 0) ?
 			user.getLastVisitedLocation() :
 			trackUserLocation(user);
@@ -68,30 +71,18 @@ public class TourGuideService {
 
 
 
-/*
-	public void addUser(User user) {
-		userService.addUser(user);
-		/*if(!userRepository.internalUserMap.containsKey(user.getUserName())) {
-			userRepository.internalUserMap.put(user.getUserName(), user);
-		}*/
-/*	}
-	public List<User> getAllUsers() {
-		//return userRepository.internalUserMap.values().stream().collect(Collectors.toList());
-		return userService.getAllUsers();
-	}
-*/
-
 
 
 	public List<Provider> getTripDeals(User user) {
 		int cumulatativeRewardPoints = user.getUserRewards().stream().mapToInt(i -> i.getRewardPoints()).sum();
-		List<Provider> providers = tripPricer.getPrice(userRepository.tripPricerApiKey, user.getUserId(), user.getUserPreferences().getNumberOfAdults(),
+		List<Provider> providers = tripPricer.getPrice(UserRepository.tripPricerApiKey, user.getUserId(), user.getUserPreferences().getNumberOfAdults(),
 				user.getUserPreferences().getNumberOfChildren(), user.getUserPreferences().getTripDuration(), cumulatativeRewardPoints);
 		user.setTripDeals(providers);
 		return providers;
 	}
 	
 	public VisitedLocation trackUserLocation(User user) {
+
 		VisitedLocation visitedLocation = gpsUtil.getUserLocation(user.getUserId());
 		// verifier les sleep et sleeplighter dans gpsutil et dans calculateRewards()
 		// paralleliser asynchrone le getuserloc et le calculateRewards
@@ -101,57 +92,46 @@ public class TourGuideService {
 		return visitedLocation;
 	}
 
+	//////////////////////////////////////  Get all user's recent locations and UUID couple //////////////////////
+	public  Map<UUID, Location> FillCouple(List<User> users){
+		Map<UUID, Location> couple = new HashMap<>();
+
+		/*for(User oneUser : users){
+			couple.put(oneUser.getUserId(), oneUser.getLastVisitedLocation().location);
+		}*/
+
+		// parallel plus lent avec 100 users
+		users.parallelStream().forEach(user -> couple.put(user.getUserId(), user.getLastVisitedLocation().location));
+
+		// parallel : 11 sec, 9 sec pour 1000 users. pour 5000 users : 12 sec. pour 10000 users : 6 sec
+		// sequentiel : 08 sec, 7 sec pour 1000 users. pour 5000 users : 16 sec. pour 10000 users : 21 sec
+
+		// Au-dela de 5000 users, la paralell devient plus rapide que le sequentiel
+
+		return couple;
+	}
 
 	//////////////////////////////////////  Get the closest five tourist attractions to the user //////////////////////
 
-	private Integer[] retrievePositions(Map<Integer, Double> allSortedDistances){
+	private List<Integer> retrievePositions(Map<Integer, Double> allSortedDistances){
 		Integer idx = 0;
-		Integer positions[] = new Integer[NbOfClosest];
+		List<Integer> listOfPositions = new ArrayList<>();
 
-		Set set = allSortedDistances.entrySet();
-		Iterator i = set.iterator();
+		Set<Map.Entry<Integer, Double>> set = allSortedDistances.entrySet();
+		Iterator<Map.Entry<Integer, Double>> i = set.iterator();
 
 		while(i.hasNext()) {
-			Map.Entry me = (Map.Entry) i.next();
+			Map.Entry<Integer, Double> me = i.next();
 			if(idx < NbOfClosest) {
-				//ret += me.getKey() + ": " + me.getValue() + " ";
-				positions[idx] = (Integer) me.getKey();
+				listOfPositions.add(me.getKey());
 			}
 			idx++;
 		}
-
-		return positions;
+		return listOfPositions;
 	}
 
-	private Map setAllAttractionNames(Map<Integer, Double> allSortedDistances, Integer position, List<Attraction> allAttractions){
-		Integer idx = 0;
-		Integer positions[] = new Integer[NbOfClosest];
-
-		Hashtable<Integer, String> allAttractionNames = new Hashtable<>();
-
-		positions = retrievePositions(allSortedDistances);
-
-		// recuperer la map des noms des attractions
-		for(Integer index = 0; index < NbOfClosest; index++) {
-			idx = 0;
-			for(Attraction attraction : allAttractions) {
-
-				if (position < NbOfClosest) {
-					if (positions[position].equals(idx)) {
-						allAttractionNames.put(positions[position], attraction.attractionName);
-						position++;
-					}
-					idx++;
-				}
-			}
-		}
-
-		return allAttractionNames;
-	}
-
-
-	private Map findAllDistances(VisitedLocation visitedLocation, Integer position, List<Attraction> allAttractions){
-		Hashtable<Integer, Double> allDistances = new Hashtable<>();
+	private Map<Integer, Double> findAllDistances(VisitedLocation visitedLocation, Integer position, List<Attraction> allAttractions){
+		HashMap<Integer, Double> allDistances = new HashMap<>();
 
 		for(Attraction attraction : allAttractions) {
 			allDistances.put(position, rewardsService.getDistance(visitedLocation.location, attraction));
@@ -162,15 +142,17 @@ public class TourGuideService {
 	}
 
 	private static Map<Integer, Double> sortAllDistancesWithPositions( Map<Integer, Double> map ){
-		List<Map.Entry<Integer, Double>> list =
-				new LinkedList<Map.Entry<Integer, Double>>( map.entrySet() );
+		List<Map.Entry<Integer, Double>> list =	new LinkedList<>( map.entrySet() );
+
 		Collections.sort( list, new Comparator<Map.Entry<Integer, Double>>(){
 			public int compare( Map.Entry<Integer, Double> o1, Map.Entry<Integer, Double> o2 ){
 				return (o1.getValue()).compareTo( o2.getValue());
 			}
 		});
 
-		HashMap<Integer, Double> map_after = new LinkedHashMap<Integer, Double>();
+
+
+		HashMap<Integer, Double> map_after = new LinkedHashMap<>();
 		for(Map.Entry<Integer, Double> entry : list)
 			map_after.put( entry.getKey(), entry.getValue() );
 		return map_after;
@@ -187,37 +169,31 @@ public class TourGuideService {
 	public List<AttractionDTO> getClosest5Attractions(VisitedLocation visitedLocation, User user){
 
 		List<AttractionDTO> attractionsDto = new ArrayList<>();
-		Map<Integer, Double> allDistances = new Hashtable<>();
-		Map<Integer, Double> allSortedDistances = new HashMap<>();
-		Map<Integer, String> allAttractionNames;
 
 		List<Attraction> allAttractions = gpsUtil.getAttractions();
+
 		Integer position = 0;
-		allDistances = findAllDistances(visitedLocation, position, allAttractions);
-		allSortedDistances = sortAllDistancesWithPositions(allDistances);
+		Map<Integer, Double> allDistances = findAllDistances(visitedLocation, position, allAttractions);
 
-		Integer positions[] = new Integer[NbOfClosest];
-		Integer idx =0;
-		position = 0;
-		allAttractionNames  = setAllAttractionNames(allSortedDistances, position, allAttractions);
-		positions = retrievePositions(allSortedDistances);
+		Map<Integer, Double> allSortedDistances = sortAllDistancesWithPositions(allDistances);
 
-		for(Integer index = 0; index < NbOfClosest; index++) {
-			idx = 0;
-			for (Attraction attraction : allAttractions) {
-				if (position < NbOfClosest) {
-					if (positions[position].equals(idx)) {
-						AttractionDTO attractionDTO = new AttractionDTO(user.getUserName(), visitedLocation,
-								rewardsService.getDistance(visitedLocation.location, attraction),
-								new UserReward(visitedLocation, attraction, rewardsService.getRewardPoints(attraction, user)));
+		List<Integer> listOfPositions= retrievePositions(allSortedDistances);
 
-						attractionsDto.add(attractionDTO);
-						position++;
-					}
-					idx++;
-				}
+		AtomicReference<Integer> numeroAttract = new AtomicReference<>(0);
+		AtomicReference<Integer> finalNumeroAttract = numeroAttract;
+
+		allAttractions.stream().forEach(attrac -> {
+			if(listOfPositions.contains(finalNumeroAttract.get())) {
+
+				AttractionDTO attractionDTO = new AttractionDTO(user.getUserName(), user.getLastVisitedLocation().location,
+						attrac.longitude, attrac.latitude,
+						rewardsService.getDistance(user.getLastVisitedLocation().location, attrac),
+						new UserReward(visitedLocation, attrac, rewardsService.getRewardPoints(attrac, user)));
+
+				attractionsDto.add(attractionDTO);
 			}
-		}
+			finalNumeroAttract.getAndSet(finalNumeroAttract.get() + 1);
+		});
 
 		return attractionsDto;
 	}

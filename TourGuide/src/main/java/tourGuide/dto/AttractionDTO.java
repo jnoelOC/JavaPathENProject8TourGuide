@@ -9,16 +9,23 @@ import java.util.UUID;
 public class AttractionDTO {
     private String userName;
 
-    private VisitedLocation visitedLocation;
+    private Location userLocation;
+
+
+    private Double attractionLongitude;
+
+    private Double attractionLatitude;
 
     private Double distanceInMiles;
 
     private UserReward rewardPoints;
 
 
-    public AttractionDTO(String username, VisitedLocation visitedLocation, Double distanceInMiles, UserReward rewardPoints) {
+    public AttractionDTO(String username, Location userLocation, Double attractionLongitude, Double attractionLatitude, Double distanceInMiles, UserReward rewardPoints) {
         this.userName = username;
-        this.visitedLocation = visitedLocation;
+        this.userLocation = userLocation;
+        this.attractionLongitude = attractionLongitude;
+        this.attractionLatitude = attractionLatitude;
         this.distanceInMiles = distanceInMiles;
         this.rewardPoints = rewardPoints;
     }
@@ -31,12 +38,28 @@ public class AttractionDTO {
         this.userName = username;
     }
 
-    public VisitedLocation getVisitedLocation() {
-        return visitedLocation;
+    public Location getUserLocation() {
+        return userLocation;
     }
 
-    public void setVisitedLocation(VisitedLocation visitedLocation) {
-        this.visitedLocation = visitedLocation;
+    public void setUserLocation(Location userLocation) {
+        this.userLocation = userLocation;
+    }
+
+    public Double getAttractionLongitude() {
+        return attractionLongitude;
+    }
+
+    public void setAttractionLongitude(Double attractionLongitude) {
+        this.attractionLongitude = attractionLongitude;
+    }
+
+    public Double getAttractionLatitude() {
+        return attractionLatitude;
+    }
+
+    public void setAttractionLatitude(Double attractionLatitude) {
+        this.attractionLatitude = attractionLatitude;
     }
 
     public Double getDistanceInMiles() {

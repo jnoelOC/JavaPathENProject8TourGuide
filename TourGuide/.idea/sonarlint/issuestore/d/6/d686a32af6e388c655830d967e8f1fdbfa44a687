@@ -1,0 +1,18 @@
+
+t	java:S120"ZRename this package name to match the regular expression '^[a-z_]+(\.[a-z_][a-z0-9_]*)*$'.(—§žèýÿÿÿÿ
+o	java:S115"ZRename this constant name to match the regular expression '^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$'.(ð±üÑ
+\
+java:S3457&"AFormat specifiers should be used instead of string concatenation.(É°™˜øÿÿÿÿ
+V	java:S125+"<This block of commented-out lines of code should be removed.(×Èž„ûÿÿÿÿ
+B
+java:S16029",Remove useless curly braces around statement(ßê™è
+4
+java:S2119A"Save and re-use this "Random".(éÖÃì
+4
+java:S2119G"Save and re-use this "Random".(éÖÃì
+9
+java:S2119K"Save and re-use this "Random".(—íø–þÿÿÿÿ
+`
+java:S1128"ERemove this unused import 'org.springframework.stereotype.Component'.(Þ÷Ñ¸ÿÿÿÿÿ
+Q
+java:S1128";Remove this unused import 'javax.annotation.PostConstruct'.(›ÅÁ

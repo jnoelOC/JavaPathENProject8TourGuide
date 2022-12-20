@@ -1,0 +1,16 @@
+
+g	java:S117›"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(•–‚
+?
+java:S1604“"(Make this anonymous inner class a lambda(¦Ðñ„
+‚
+java:S1488A"gImmediately return this expression instead of assigning it to the temporary variable "visitedLocation".(î§Èÿþÿÿÿÿ
+t	java:S120"ZRename this package name to match the regular expression '^[a-z_]+(\.[a-z_][a-z0-9_]*)*$'.(—ìÉûÿÿÿÿ
+o	java:S115""ZRename this constant name to match the regular expression '^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$'.(˜Ä™‘
+`
+java:S1155A">Use isEmpty() to check whether the collection is empty or not.(î§Èÿþÿÿÿÿ8òÖ—ƒÓ0
+c
+java:S1612M"HReplace this lambda with method reference 'UserReward::getRewardPoints'.(ÎŽùôÿÿÿÿÿ
+b	java:S100`"NRename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(÷ÝåY
+X	java:S125c"<This block of commented-out lines of code should be removed.(¡ïð„8º˜‹ƒÓ0
+Q
+java:S1161Õ":Add the "@Override" annotation above this method signature(“–ýþ

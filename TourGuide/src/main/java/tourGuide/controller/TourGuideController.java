@@ -1,7 +1,8 @@
 package tourGuide.controller;
 
-import java.util.List;
+import java.util.*;
 
+import gpsUtil.location.Location;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,16 +54,15 @@ public class TourGuideController {
     @GetMapping("/getClosestFiveAttractions")
     public ResponseEntity<List<AttractionDTO>> getClosestFiveAttractions(@RequestParam String userName) {
         VisitedLocation visitedLocation = tourGuideService.getUserLocation(userService.getUser(userName));
-       // return JsonStream.serialize(tourGuideService.getClosest5Attractions(visitedLocation, userService.getUser(userName)));
         List<AttractionDTO> attractionsDto = null;
 
         attractionsDto = tourGuideService.getClosest5Attractions(visitedLocation, userService.getUser(userName));
 
-        if (attractionsDto == null) {
+        if (attractionsDto.isEmpty()) {
             logger.error("Erreur dans getClosestFiveAttractions : status Non trouvé.");
             return new ResponseEntity<>(attractionsDto, HttpStatus.NOT_FOUND);
         } else {
-            logger.info("getClosestFiveAttractions : Liste de attractions trouvées.");
+            logger.info("getClosestFiveAttractions : Les 5 plus proches attractions trouvées.");
             return new ResponseEntity<>(attractionsDto, HttpStatus.FOUND);
         }
     }
@@ -84,8 +84,8 @@ public class TourGuideController {
         return userService.getAllUsers();
     }
     
-    @RequestMapping("/getAllCurrentLocations")
-    public String getAllCurrentLocations() {
+    @RequestMapping("/getAllCurrentLocationsOfUsers")
+    public String getAllCurrentLocationsOfUsers() {
     	// TODO: Get a list of every user's most recent location as JSON
     	//- Note: does not use gpsUtil to query for their current location, 
     	//        but rather gathers the user's current location from their stored location history.
@@ -100,7 +100,23 @@ public class TourGuideController {
     	
     	return JsonStream.serialize("");
     }
-    
+
+    @GetMapping("/getAllCurrentLocations")
+    public  ResponseEntity<Map<UUID, Location>> getAllCurrentLocations() {
+
+        List<User> users = userService.getAllUsers();
+
+        Map<UUID, Location> coupleOfUserIdAndLocation = tourGuideService.FillCouple(users);
+
+        if (coupleOfUserIdAndLocation.isEmpty()) {
+            logger.error("Erreur dans getAllCurrentLocations : status Non trouvé.");
+            return new ResponseEntity<>(coupleOfUserIdAndLocation, HttpStatus.NOT_FOUND);
+        } else {
+            logger.info("getAllCurrentLocations : Les localisations les plus actuelles trouvées.");
+            return new ResponseEntity<>(coupleOfUserIdAndLocation, HttpStatus.FOUND);
+        }
+    }
+
     @RequestMapping("/getTripDeals")
     public String getTripDeals(@RequestParam String userName) {
     	List<Provider> providers = tourGuideService.getTripDeals(userService.getUser(userName));
